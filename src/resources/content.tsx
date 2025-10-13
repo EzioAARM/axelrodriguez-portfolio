@@ -73,6 +73,17 @@ const staticHome: Home = {
         href: "#work",
     },
     subline: "",
+    carousel: {
+        display: false,
+        images: [
+            {
+                id: "",
+                alt: "",
+                caption: "",
+                url: "",
+            },
+        ],
+    },
 };
 
 /**
@@ -110,6 +121,17 @@ export async function getHomePageContent(): Promise<Home> {
             },
             subline: <SimpleHtmlRenderer html={sublineHtml} />,
             loading: false,
+            carousel: {
+                display: strapiContent.HasCarousel,
+                images: strapiContent.Carousel.map((image) => ({
+                    id: image.id.toString(),
+                    alt: image.alt,
+                    caption: image.caption,
+                    url: image.url.formats.large
+                        ? image.url.formats.large.url
+                        : image.url.url,
+                })),
+            },
         };
     }
 

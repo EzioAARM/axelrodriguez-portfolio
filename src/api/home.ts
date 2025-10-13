@@ -2,16 +2,70 @@
  * Strapi API functions for fetching home content
  */
 
+export interface ImageFormat {
+    ext: string;
+    url: string;
+    hash: string;
+    mime: string;
+    name: string;
+    path: string | null;
+    size: number;
+    width: number;
+    height: number;
+    sizeInBytes: number;
+}
+
+export interface ImageFormats {
+    large?: ImageFormat;
+    small?: ImageFormat;
+    medium?: ImageFormat;
+    thumbnail?: ImageFormat;
+}
+
+export interface StrapiImage {
+    id: number;
+    documentId: string;
+    name: string;
+    alternativeText: string | null;
+    caption: string | null;
+    width: number;
+    height: number;
+    formats: ImageFormats;
+    hash: string;
+    ext: string;
+    mime: string;
+    size: number;
+    url: string;
+    previewUrl: string | null;
+    provider: string;
+    provider_metadata: Record<string, unknown> | null;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+}
+
+export interface CarouselImage {
+    id: number;
+    alt: string;
+    caption: string;
+    url: StrapiImage;
+}
+
 export interface StrapiHomeResponse {
     data: {
         id: number;
+        documentId: string;
         Headline: string;
         HasFeatured: boolean;
         Featured: string;
         SubLine: string;
-        CreatedAt: string;
+        HasCarousel: boolean;
+        createdAt: string;
         updatedAt: string;
         publishedAt: string;
+        locale: string;
+        Carousel: CarouselImage[];
+        localizations: Record<string, unknown>[];
     };
     meta: Record<string, unknown>;
 }
@@ -21,6 +75,8 @@ export interface HomeContent {
     HasFeatured: boolean;
     Featured: string;
     SubLine: string;
+    HasCarousel: boolean;
+    Carousel: CarouselImage[];
 }
 
 /**
@@ -39,7 +95,7 @@ export async function getHomeContent(): Promise<HomeContent> {
     }
 
     try {
-        const response = await fetch(`${apiUrl}/api/home`, {
+        const response = await fetch(`${apiUrl}/api/home?populate=all`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -54,13 +110,22 @@ export async function getHomeContent(): Promise<HomeContent> {
 
         const data: StrapiHomeResponse = await response.json();
 
-        const { Headline, HasFeatured, Featured, SubLine } = data.data;
+        const {
+            Headline,
+            HasFeatured,
+            Featured,
+            SubLine,
+            HasCarousel,
+            Carousel,
+        } = data.data;
 
         return {
             Headline,
             HasFeatured,
             Featured,
             SubLine,
+            HasCarousel,
+            Carousel,
         };
     } catch (error) {
         console.error("Error fetching home content from Strapi:", error);

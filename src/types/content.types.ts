@@ -80,6 +80,18 @@ export interface BasePageConfig {
     image?: `/images/${string}` | string;
 }
 
+export interface HomeCarousel {
+    display: boolean;
+    images: HomeCarouselImage[];
+}
+
+export interface HomeCarouselImage {
+    id: string;
+    alt: string;
+    caption: string;
+    url: string;
+}
+
 /**
  * Home page configuration.
  */
@@ -100,6 +112,7 @@ export interface Home extends BasePageConfig {
     /** The sub text which appears below the headline */
     subline: string | React.ReactNode;
     loading: boolean;
+    carousel: HomeCarousel;
 }
 
 /**
