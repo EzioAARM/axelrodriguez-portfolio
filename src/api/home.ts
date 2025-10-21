@@ -1,6 +1,7 @@
 /**
  * Strapi API functions for fetching home content
  */
+import { cache } from "react";
 
 export interface ImageFormat {
     ext: string;
@@ -64,6 +65,9 @@ export interface StrapiHomeResponse {
         updatedAt: string;
         publishedAt: string;
         locale: string;
+        hasNewsletter: boolean;
+        newsletterTitle: string;
+        newsletterDescription: string;
         Carousel: CarouselImage[];
         localizations: Record<string, unknown>[];
     };
@@ -77,6 +81,9 @@ export interface HomeContent {
     SubLine: string;
     HasCarousel: boolean;
     Carousel: CarouselImage[];
+    HasNewsletter?: boolean;
+    NewsletterTitle?: string;
+    NewsletterDescription?: string;
 }
 
 /**
@@ -84,7 +91,7 @@ export interface HomeContent {
  * @returns Promise<HomeContent> - The home content data
  * @throws Error if the API request fails or environment variables are missing
  */
-export async function getHomeContent(): Promise<HomeContent> {
+export const getHomeContent = cache(async (): Promise<HomeContent> => {
     const apiUrl =
         process.env.STRAPI_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL;
 
@@ -117,6 +124,9 @@ export async function getHomeContent(): Promise<HomeContent> {
             SubLine,
             HasCarousel,
             Carousel,
+            hasNewsletter,
+            newsletterTitle,
+            newsletterDescription,
         } = data.data;
 
         return {
@@ -126,12 +136,15 @@ export async function getHomeContent(): Promise<HomeContent> {
             SubLine,
             HasCarousel,
             Carousel,
+            HasNewsletter: hasNewsletter,
+            NewsletterTitle: newsletterTitle,
+            NewsletterDescription: newsletterDescription,
         };
     } catch (error) {
         console.error("Error fetching home content from Strapi:", error);
         throw error;
     }
-}
+});
 
 /**
  * Fetches home content with error handling and fallback

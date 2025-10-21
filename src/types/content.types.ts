@@ -113,6 +113,7 @@ export interface Home extends BasePageConfig {
     subline: string | React.ReactNode;
     loading: boolean;
     carousel: HomeCarousel;
+    newsletter: Newsletter;
 }
 
 /**

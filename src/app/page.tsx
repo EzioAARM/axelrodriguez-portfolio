@@ -159,7 +159,7 @@ export default async function Home() {
                 </RevealFx>
             ) : null}
 
-            {routes["/blog"] && (
+            {/*routes["/blog"] && (
                 <Column fillWidth gap="24" marginBottom="l">
                     <Row fillWidth paddingRight="64">
                         <Line maxWidth={48} />
@@ -187,7 +187,7 @@ export default async function Home() {
                         <Line maxWidth={48} />
                     </Row>
                 </Column>
-            )}
+            )*/}
             <Mailchimp />
         </Column>
     );

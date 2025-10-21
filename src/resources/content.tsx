@@ -27,12 +27,6 @@ const person: Person = {
     languages: ["English", "Spanish"], // optional: Leave the array empty if you don't want to display languages
 };
 
-const newsletter: Newsletter = {
-    display: true,
-    title: <>Subscribe to {person.firstName}'s Newsletter</>,
-    description: <>My weekly newsletter about creativity and engineering</>,
-};
-
 const social: Social = [
     // Links are automatically displayed.
     // Import new icons in /once-ui/icons.ts
@@ -84,6 +78,11 @@ const staticHome: Home = {
             },
         ],
     },
+    newsletter: {
+        display: true,
+        title: <>Subscribe to {person.firstName}'s Newsletter</>,
+        description: <>My weekly newsletter about creativity and engineering</>,
+    },
 };
 
 /**
@@ -131,6 +130,11 @@ export async function getHomePageContent(): Promise<Home> {
                         ? image.url.formats.large.url
                         : image.url.url,
                 })),
+            },
+            newsletter: {
+                display: strapiContent.HasNewsletter ?? false,
+                title: strapiContent.NewsletterTitle,
+                description: strapiContent.NewsletterDescription,
             },
         };
     }
@@ -383,4 +387,4 @@ const gallery: Gallery = {
     ],
 };
 
-export { person, social, newsletter, home, about, blog, work, gallery };
+export { person, social, home, about, blog, work, gallery };
