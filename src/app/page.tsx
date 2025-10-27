@@ -23,8 +23,6 @@ import {
     getHomePageContent,
 } from "@/resources";
 import { Mailchimp } from "@/components";
-import { Projects } from "@/components/work/Projects";
-import { Posts } from "@/components/blog/Posts";
 
 export async function generateMetadata() {
     // Get dynamic content for metadata

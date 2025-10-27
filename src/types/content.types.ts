@@ -127,11 +127,24 @@ export interface About extends BasePageConfig {
         display: boolean;
         /** Whether to show sub-items in the table of contents */
         subItems: boolean;
+        /** Title for the introduction section */
+        IntroductionTitle: string;
+        /** Title for the experience section */
+        ExperienceTitle: string;
+        /** Title for the education section */
+        EducationTitle: string;
+        /** Title for the technical skills section */
+        TechnicalSkillsTitle: string;
     };
+    loading: boolean;
     /** Avatar section configuration */
     avatar: {
         /** Whether to display the avatar */
         display: boolean;
+        /** Path to the avatar image */
+        image: string;
+        /** Alternative text for the avatar image */
+        alt: string;
     };
     /** Calendar section configuration */
     calendar: {
@@ -163,8 +176,8 @@ export interface About extends BasePageConfig {
             timeframe: string;
             /** Role or job title */
             role: string;
-            /** Achievements at the company */
-            achievements: React.ReactNode[];
+            /** Description of the role at the company */
+            description: string | React.ReactNode;
             /** Images related to the experience */
             images?: Array<{
                 /** Image source path */
@@ -188,8 +201,23 @@ export interface About extends BasePageConfig {
         institutions: Array<{
             /** Institution name */
             name: string;
+            /** Title or degree obtained */
+            title: string;
+            /** Timeframe of study */
+            timeframe: string;
             /** Description of studies */
-            description: React.ReactNode;
+            description: string | React.ReactNode;
+            /** Images related to the experience */
+            images?: Array<{
+                /** Image source path */
+                src: string;
+                /** Image alt text */
+                alt: string;
+                /** Image width ratio */
+                width: number;
+                /** Image height ratio */
+                height: number;
+            }>;
         }>;
     };
     /** Technical skills section */
@@ -202,8 +230,14 @@ export interface About extends BasePageConfig {
         skills: Array<{
             /** Skill title */
             title: string;
+            /** Proficiency level */
+            level: "beginner" | "intermediate" | "advanced" | "expert";
             /** Skill description */
-            description?: React.ReactNode;
+            description?: string;
+
+            /** Skill group or category (e.g., "Frontend", "Backend", "DevOps", "Hard", "Soft") */
+            group?: string;
+
             /** Skill tags */
             tags?: Array<{
                 name: string;
@@ -220,6 +254,36 @@ export interface About extends BasePageConfig {
                 /** Image height ratio */
                 height: number;
             }>;
+        }>;
+    };
+    /** Languages section */
+    languages: {
+        /** Whether to display languages section */
+        display: boolean;
+        /** List of languages */
+        list: Array<{
+            /** Language name */
+            name: string;
+            /** Proficiency level */
+            level: string;
+        }>;
+    };
+    /** Social links section */
+    social: {
+        /** Whether to display social links section */
+        display: boolean;
+        /** List of social links */
+        links: Array<{
+            /** Link title */
+            title: string;
+            /** Link URL */
+            url: string;
+            /** Type of icon to display with the link or css class for custom icons */
+            type: "icon" | "custom";
+            /** Link icon */
+            icon: string | undefined;
+            /** Icon url */
+            iconUrl: string | undefined;
         }>;
     };
 }

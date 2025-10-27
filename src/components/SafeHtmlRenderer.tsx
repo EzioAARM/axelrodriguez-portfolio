@@ -23,6 +23,7 @@ export function SafeHtmlRenderer({ html, className }: SafeHtmlRendererProps) {
 /**
  * Alternative approach using React elements for simple formatting
  * This avoids dangerouslySetInnerHTML but has limited formatting support
+ * Supports: strong, em, code, u, ul, ol, li
  */
 export function SimpleHtmlRenderer({ html, className }: SafeHtmlRendererProps) {
     // Parse simple HTML tags and convert to React elements
@@ -36,65 +37,154 @@ export function SimpleHtmlRenderer({ html, className }: SafeHtmlRendererProps) {
         // Also clean up any extra whitespace that might be left
         cleanHtml = cleanHtml.trim();
 
-        // Split by HTML tags and process
-        const parts = cleanHtml.split(/(<\/?(?:strong|em|code|u)>)/g);
+        // Handle lists first (before splitting by other tags)
+        const handleLists = (html: string): React.ReactNode[] => {
+            const elements: React.ReactNode[] = [];
+            let currentIndex = 0;
 
-        const elements: React.ReactNode[] = [];
-        let currentFormatting: string[] = [];
+            // Match both ordered and unordered lists
+            const listRegex = /<(ul|ol)>([\s\S]*?)<\/(ul|ol)>/g;
+            let match: RegExpExecArray | null = listRegex.exec(html);
 
-        for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
+            while (match !== null) {
+                const [fullMatch, listType, listContent] = match;
+                const matchStart = match.index;
 
-            if (part === "<strong>") {
-                currentFormatting.push("strong");
-            } else if (part === "</strong>") {
-                currentFormatting = currentFormatting.filter(
-                    (f) => f !== "strong"
-                );
-            } else if (part === "<em>") {
-                currentFormatting.push("em");
-            } else if (part === "</em>") {
-                currentFormatting = currentFormatting.filter((f) => f !== "em");
-            } else if (part === "<code>") {
-                currentFormatting.push("code");
-            } else if (part === "</code>") {
-                currentFormatting = currentFormatting.filter(
-                    (f) => f !== "code"
-                );
-            } else if (part === "<u>") {
-                currentFormatting.push("u");
-            } else if (part === "</u>") {
-                currentFormatting = currentFormatting.filter((f) => f !== "u");
-            } else if (part && !part.startsWith("<")) {
-                // This is text content
-                let element: React.ReactNode = part;
-
-                // Apply formatting in reverse order
-                const formats = [...currentFormatting];
-                for (const format of formats) {
-                    switch (format) {
-                        case "strong":
-                            element = (
-                                <strong key={`${i}-strong`}>{element}</strong>
-                            );
-                            break;
-                        case "em":
-                            element = <em key={`${i}-em`}>{element}</em>;
-                            break;
-                        case "code":
-                            element = <code key={`${i}-code`}>{element}</code>;
-                            break;
-                        case "u":
-                            element = <u key={`${i}-u`}>{element}</u>;
-                            break;
+                // Add any content before the list
+                if (matchStart > currentIndex) {
+                    const beforeContent = html.slice(currentIndex, matchStart);
+                    if (beforeContent.trim()) {
+                        elements.push(
+                            parseInlineContent(beforeContent, elements.length)
+                        );
                     }
                 }
 
-                elements.push(<span key={i}>{element}</span>);
-            }
-        }
+                // Parse list items
+                const listItems =
+                    listContent.match(/<li>([\s\S]*?)<\/li>/g) || [];
+                const parsedItems = listItems.map((item, index) => {
+                    const content = item.replace(/<\/?li>/g, "").trim();
+                    return (
+                        <li key={`li-${elements.length}-${index}`}>
+                            {parseInlineContent(content, index)}
+                        </li>
+                    );
+                });
 
-        return elements;
+                // Create the list element
+                const ListComponent = listType === "ol" ? "ol" : "ul";
+                elements.push(
+                    <ListComponent key={`list-${elements.length}`}>
+                        {parsedItems}
+                    </ListComponent>
+                );
+
+                currentIndex = matchStart + fullMatch.length;
+                match = listRegex.exec(html);
+            }
+
+            // Add any remaining content after the last list
+            if (currentIndex < html.length) {
+                const remainingContent = html.slice(currentIndex);
+                if (remainingContent.trim()) {
+                    elements.push(
+                        parseInlineContent(remainingContent, elements.length)
+                    );
+                }
+            }
+
+            // If no lists were found, parse the entire content as inline
+            if (elements.length === 0) {
+                elements.push(parseInlineContent(html, 0));
+            }
+
+            return elements;
+        };
+
+        // Parse inline formatting (strong, em, code, u)
+        const parseInlineContent = (
+            content: string,
+            keyPrefix: number
+        ): React.ReactNode => {
+            const parts = content.split(/(<\/?(?:strong|em|code|u)>)/g);
+            const elements: React.ReactNode[] = [];
+            let currentFormatting: string[] = [];
+
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+
+                if (part === "<strong>") {
+                    currentFormatting.push("strong");
+                } else if (part === "</strong>") {
+                    currentFormatting = currentFormatting.filter(
+                        (f) => f !== "strong"
+                    );
+                } else if (part === "<em>") {
+                    currentFormatting.push("em");
+                } else if (part === "</em>") {
+                    currentFormatting = currentFormatting.filter(
+                        (f) => f !== "em"
+                    );
+                } else if (part === "<code>") {
+                    currentFormatting.push("code");
+                } else if (part === "</code>") {
+                    currentFormatting = currentFormatting.filter(
+                        (f) => f !== "code"
+                    );
+                } else if (part === "<u>") {
+                    currentFormatting.push("u");
+                } else if (part === "</u>") {
+                    currentFormatting = currentFormatting.filter(
+                        (f) => f !== "u"
+                    );
+                } else if (part && !part.startsWith("<")) {
+                    // This is text content
+                    let element: React.ReactNode = part;
+
+                    // Apply formatting in reverse order
+                    const formats = [...currentFormatting];
+                    for (const format of formats) {
+                        switch (format) {
+                            case "strong":
+                                element = (
+                                    <strong key={`${keyPrefix}-${i}-strong`}>
+                                        {element}
+                                    </strong>
+                                );
+                                break;
+                            case "em":
+                                element = (
+                                    <em key={`${keyPrefix}-${i}-em`}>
+                                        {element}
+                                    </em>
+                                );
+                                break;
+                            case "code":
+                                element = (
+                                    <code key={`${keyPrefix}-${i}-code`}>
+                                        {element}
+                                    </code>
+                                );
+                                break;
+                            case "u":
+                                element = (
+                                    <u key={`${keyPrefix}-${i}-u`}>{element}</u>
+                                );
+                                break;
+                        }
+                    }
+
+                    elements.push(
+                        <span key={`${keyPrefix}-${i}`}>{element}</span>
+                    );
+                }
+            }
+
+            return elements.length === 1 ? elements[0] : elements;
+        };
+
+        return handleLists(cleanHtml);
     };
 
     return <div className={className}>{parseSimpleHtml(html)}</div>;

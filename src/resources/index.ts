@@ -2,13 +2,13 @@
 export {
     person,
     social,
-    newsletter,
     home,
     about,
     blog,
     work,
     gallery,
     getHomePageContent,
+    getAboutPageContent,
 } from "./content";
 
 export {

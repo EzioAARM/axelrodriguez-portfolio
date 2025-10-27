@@ -11,49 +11,65 @@ import {
     Meta,
     Schema,
     Row,
+    Flex,
+    Spinner,
+    ProgressBar,
 } from "@once-ui-system/core";
-import { baseURL, about, person, social } from "@/resources";
+import { baseURL, getAboutPageContent, person, social } from "@/resources";
 import TableOfContents from "@/components/about/TableOfContents";
 import styles from "@/components/about/about.module.scss";
 import React from "react";
 
 export async function generateMetadata() {
+    const aboutContent = await getAboutPageContent();
     return Meta.generate({
-        title: about.title,
-        description: about.description,
+        title: aboutContent.title,
+        description: aboutContent.description,
         baseURL: baseURL,
-        image: `/api/og/generate?title=${encodeURIComponent(about.title)}`,
-        path: about.path,
+        image: `/api/og/generate?title=${encodeURIComponent(
+            aboutContent.title
+        )}`,
+        path: aboutContent.path,
     });
 }
 
-export default function About() {
+export default async function About() {
+    const about = await getAboutPageContent();
     const structure = [
         {
-            title: about.intro.title,
+            title: about.tableOfContent.IntroductionTitle,
             display: about.intro.display,
             items: [],
         },
         {
-            title: about.work.title,
+            title: about.tableOfContent.ExperienceTitle,
             display: about.work.display,
             items: about.work.experiences.map(
                 (experience) => experience.company
             ),
         },
         {
-            title: about.studies.title,
+            title: about.tableOfContent.EducationTitle,
             display: about.studies.display,
             items: about.studies.institutions.map(
                 (institution) => institution.name
             ),
         },
         {
-            title: about.technical.title,
+            title: about.tableOfContent.TechnicalSkillsTitle,
             display: about.technical.display,
-            items: about.technical.skills.map((skill) => skill.title),
+            items: [
+                ...new Set(about.technical.skills.map((skill) => skill.group)),
+            ],
         },
     ];
+    if (about.loading) {
+        return (
+            <Flex fillWidth paddingY="128" horizontal="center">
+                <Spinner />
+            </Flex>
+        );
+    }
     return (
         <Column maxWidth="m">
             <Schema
@@ -99,20 +115,25 @@ export default function About() {
                         flex={3}
                         horizontal="center"
                     >
-                        <Avatar src={person.avatar} size="xl" />
+                        <Avatar
+                            src={about.avatar.image}
+                            size="xl"
+                            title={about.avatar.alt}
+                        />
                         <Row gap="8" vertical="center">
                             <Icon onBackground="accent-weak" name="globe" />
                             {person.location}
                         </Row>
-                        {person.languages && person.languages.length > 0 && (
-                            <Row wrap gap="8">
-                                {person.languages.map((language) => (
-                                    <Tag key={language} size="l">
-                                        {language}
-                                    </Tag>
-                                ))}
-                            </Row>
-                        )}
+                        {about.languages.display &&
+                            about.languages.list.length > 0 && (
+                                <Row wrap gap="8">
+                                    {about.languages.list.map((language) => (
+                                        <Tag key={language.name} size="l">
+                                            {language.name} ({language.level})
+                                        </Tag>
+                                    ))}
+                                </Row>
+                            )}
                     </Column>
                 )}
                 <Column className={styles.blockAlign} flex={9} maxWidth={40}>
@@ -177,16 +198,16 @@ export default function About() {
                                 fitWidth
                                 data-border="rounded"
                             >
-                                {social.map(
+                                {about.social.links.map(
                                     (item) =>
-                                        item.link && (
-                                            <React.Fragment key={item.name}>
+                                        item.url && (
+                                            <React.Fragment key={item.title}>
                                                 <Row s={{ hide: true }}>
                                                     <Button
-                                                        key={item.name}
-                                                        href={item.link}
+                                                        key={item.title}
+                                                        href={item.url}
                                                         prefixIcon={item.icon}
-                                                        label={item.name}
+                                                        label={item.title}
                                                         size="s"
                                                         weight="default"
                                                         variant="secondary"
@@ -195,8 +216,8 @@ export default function About() {
                                                 <Row hide s={{ hide: false }}>
                                                     <IconButton
                                                         size="l"
-                                                        key={`${item.name}-icon`}
-                                                        href={item.link}
+                                                        key={`${item.title}-icon`}
+                                                        href={item.url}
                                                         icon={item.icon}
                                                         variant="secondary"
                                                     />
@@ -262,22 +283,19 @@ export default function About() {
                                             >
                                                 {experience.role}
                                             </Text>
-                                            <Column as="ul" gap="16">
-                                                {experience.achievements.map(
-                                                    (
-                                                        achievement: React.ReactNode,
-                                                        index: number
-                                                    ) => (
-                                                        <Text
-                                                            as="li"
-                                                            variant="body-default-m"
-                                                            key={`${experience.company}-${index}`}
-                                                        >
-                                                            {achievement}
-                                                        </Text>
-                                                    )
-                                                )}
-                                            </Column>
+                                            <Row
+                                                fillWidth
+                                                horizontal="between"
+                                                vertical="end"
+                                                marginBottom="4"
+                                            >
+                                                <Text
+                                                    wrap="balance"
+                                                    onBackground="neutral-weak"
+                                                >
+                                                    {experience.description}
+                                                </Text>
+                                            </Row>
                                             {experience.images &&
                                                 experience.images.length >
                                                     0 && (
@@ -344,11 +362,31 @@ export default function About() {
                                             fillWidth
                                             gap="4"
                                         >
-                                            <Text
-                                                id={institution.name}
-                                                variant="heading-strong-l"
+                                            <Row
+                                                fillWidth
+                                                horizontal="between"
+                                                vertical="end"
+                                                marginBottom="4"
                                             >
-                                                {institution.name}
+                                                <Text
+                                                    id={institution.name}
+                                                    variant="heading-strong-l"
+                                                >
+                                                    {institution.name}
+                                                </Text>
+                                                <Text
+                                                    variant="heading-default-xs"
+                                                    onBackground="neutral-weak"
+                                                >
+                                                    {institution.timeframe}
+                                                </Text>
+                                            </Row>
+                                            <Text
+                                                variant="body-default-s"
+                                                onBackground="brand-weak"
+                                                marginBottom="m"
+                                            >
+                                                {institution.title}
                                             </Text>
                                             <Text
                                                 variant="heading-default-xs"
@@ -376,18 +414,37 @@ export default function About() {
                             <Column fillWidth gap="l">
                                 {about.technical.skills.map((skill) => (
                                     <Column key={skill.title} fillWidth gap="4">
-                                        <Text
-                                            id={skill.title}
-                                            variant="heading-strong-l"
+                                        <Row
+                                            fillWidth
+                                            fitHeight
+                                            gap="16"
+                                            s={{ direction: "column" }}
                                         >
-                                            {skill.title}
-                                        </Text>
-                                        <Text
-                                            variant="body-default-m"
-                                            onBackground="neutral-weak"
-                                        >
-                                            {skill.description}
-                                        </Text>
+                                            <Column fillWidth>
+                                                <Text
+                                                    id={skill.title}
+                                                    variant="heading-strong-l"
+                                                >
+                                                    {skill.title}
+                                                </Text>
+                                            </Column>
+                                            <Column fillWidth center>
+                                                <ProgressBar
+                                                    value={
+                                                        skill.level ===
+                                                        "beginner"
+                                                            ? 25
+                                                            : skill.level ===
+                                                              "intermediate"
+                                                            ? 50
+                                                            : skill.level ===
+                                                              "advanced"
+                                                            ? 75
+                                                            : 100
+                                                    }
+                                                />
+                                            </Column>
+                                        </Row>
                                         {skill.tags &&
                                             skill.tags.length > 0 && (
                                                 <Row

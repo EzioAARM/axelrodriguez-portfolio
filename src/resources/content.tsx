@@ -10,6 +10,7 @@ import type {
 } from "@/types";
 import { Line, Logo, Row, Text } from "@once-ui-system/core";
 import { getHomeContentSafe } from "@/api/home";
+import { getAboutContentSafe } from "@/api/about";
 import {
     markdownToHtml,
     safeMarkdownToHtml,
@@ -95,6 +96,9 @@ export async function getHomePageContent(): Promise<Home> {
     if (strapiContent) {
         // Convert the subline to HTML and wrap it in a React element
         const sublineHtml = await markdownToHtml(strapiContent.SubLine);
+        const imageUrl =
+            process.env.STRAPI_IMAGE_URL ||
+            process.env.NEXT_PUBLIC_STRAPI_IMAGE_URL;
 
         return {
             ...staticHome,
@@ -122,14 +126,14 @@ export async function getHomePageContent(): Promise<Home> {
             loading: false,
             carousel: {
                 display: strapiContent.HasCarousel,
-                images: strapiContent.Carousel.map((image) => ({
-                    id: image.id.toString(),
-                    alt: image.alt,
-                    caption: image.caption,
-                    url: image.url.formats.large
-                        ? image.url.formats.large.url
-                        : image.url.url,
-                })),
+                images: strapiContent.HasCarousel
+                    ? strapiContent.Carousel.map((image) => ({
+                          id: image.id.toString(),
+                          alt: image.alternativeText,
+                          caption: image.caption,
+                          url: `${imageUrl}${image.large?.url || image.url}`,
+                      }))
+                    : [],
             },
             newsletter: {
                 display: strapiContent.HasNewsletter ?? false,
@@ -145,178 +149,178 @@ export async function getHomePageContent(): Promise<Home> {
 // Export the static version as default for backward compatibility
 const home: Home = staticHome;
 
-const about: About = {
+// Static about content
+const staticAbout: About = {
     path: "/about",
     label: "About",
     title: `About – ${person.name}`,
     description: `Meet ${person.name}, ${person.role} from ${person.location}`,
+    loading: true,
     tableOfContent: {
         display: true,
-        subItems: false,
+        subItems: true,
+        IntroductionTitle: "Introduction",
+        ExperienceTitle: "Experience",
+        EducationTitle: "Education",
+        TechnicalSkillsTitle: "Technical Skills",
     },
     avatar: {
         display: true,
+        image: person.avatar,
+        alt: `${person.name} Avatar`,
     },
     calendar: {
         display: false, // puedes activarlo si usas cal.com u otro servicio
         link: "https://cal.com/axelrm/30min",
     },
     intro: {
-        display: true,
+        display: false,
         title: "Introduction",
-        description: (
-            <>
-                I'm Axel Rodríguez, a Systems Engineer and Backend Developer
-                passionate about building scalable, reliable, and efficient
-                cloud-based systems. I specialize in designing APIs, optimizing
-                databases, and implementing cloud-native solutions using Azure
-                and AWS.
-            </>
-        ),
+        description: "",
     },
     work: {
-        display: true,
+        display: false,
         title: "Professional Experience",
-        experiences: [
-            {
-                company: "Independent / Freelance",
-                timeframe: "2021 - Present",
-                role: "Backend Engineer & Cloud Solutions Architect",
-                achievements: [
-                    <>
-                        Designed and deployed microservice-based architectures
-                        using .NET, PostgreSQL, and Azure App Service with zero
-                        downtime deployment.
-                    </>,
-                    <>
-                        Built ETL pipelines with Apache Airflow for migrating
-                        millions of records between SQL Server and PostgreSQL.
-                    </>,
-                    <>
-                        Created APIs using GraphQL (HotChocolate) and optimized
-                        database performance with query tuning and caching.
-                    </>,
-                ],
-                images: [
-                    {
-                        src: "/images/projects/project-01/cover-01.jpg",
-                        alt: "Backend architecture project",
-                        width: 16,
-                        height: 9,
-                    },
-                ],
-            },
-            {
-                company: "Software Engineer (Personal Projects)",
-                timeframe: "Ongoing",
-                role: "Developer & Technical Author",
-                achievements: [
-                    <>
-                        Developed open-source projects including a CLI tool in
-                        Go with real-time database connectivity and Docker
-                        support.
-                    </>,
-                    <>
-                        Wrote technical articles on system scalability,
-                        cloud-native design, and backend optimization for
-                        personal blog and LinkedIn.
-                    </>,
-                ],
-                images: [],
-            },
-        ],
+        experiences: [],
     },
     studies: {
         display: true,
         title: "Education",
-        institutions: [
-            {
-                name: "Universidad de San Carlos de Guatemala",
-                description: (
-                    <>Bachelor’s degree in Computer Systems Engineering.</>
-                ),
-            },
-            {
-                name: "Master’s in Cybersecurity and Risk Management (in progress)",
-                description: (
-                    <>
-                        Focused on cloud security, risk assessment, and
-                        governance.
-                    </>
-                ),
-            },
-        ],
+        institutions: [],
     },
     technical: {
         display: true,
         title: "Technical Skills",
-        skills: [
-            {
-                title: "Backend Development",
-                description: (
-                    <>
-                        Experienced in building scalable APIs with .NET, Go, and
-                        Node.js using REST and GraphQL.
-                    </>
-                ),
-                tags: [
-                    { name: ".NET", icon: "dotnet" },
-                    { name: "Go", icon: "go" },
-                    { name: "GraphQL", icon: "graphql" },
-                ],
-                images: [
-                    {
-                        src: "/images/projects/project-02/cover-02.jpg",
-                        alt: "API Development",
-                        width: 16,
-                        height: 9,
-                    },
-                ],
-            },
-            {
-                title: "Cloud & DevOps",
-                description: (
-                    <>
-                        Deploying and maintaining cloud infrastructure with
-                        Azure, AWS, and Docker. Applying CI/CD, monitoring, and
-                        scalability best practices.
-                    </>
-                ),
-                tags: [
-                    { name: "Azure", icon: "azure" },
-                    { name: "AWS", icon: "aws" },
-                    { name: "Docker", icon: "docker" },
-                    { name: "CI/CD", icon: "githubactions" },
-                ],
-                images: [
-                    {
-                        src: "/images/projects/project-03/cover-03.jpg",
-                        alt: "Cloud architecture diagram",
-                        width: 16,
-                        height: 9,
-                    },
-                ],
-            },
-            {
-                title: "Data & Automation",
-                description: (
-                    <>
-                        Experience with ETL processes, Airflow DAGs, and
-                        database optimization for PostgreSQL, SQL Server, and
-                        NoSQL systems.
-                    </>
-                ),
-                tags: [
-                    { name: "PostgreSQL", icon: "postgresql" },
-                    { name: "Airflow", icon: "airflow" },
-                    { name: "SQL Server", icon: "sqlserver" },
-                    { name: "NoSQL", icon: "mongodb" },
-                ],
-                images: [],
-            },
-        ],
+        skills: [],
+    },
+    languages: {
+        display: true,
+        list: [],
+    },
+    social: {
+        display: true,
+        links: [],
     },
 };
+
+/**
+ * Get about content with Strapi integration
+ * Falls back to static content if Strapi is unavailable
+ */
+export async function getAboutPageContent(): Promise<About> {
+    const strapiContent = await getAboutContentSafe();
+
+    if (strapiContent) {
+        // Convert biography to HTML
+        const biographyHtml = await markdownToHtml(strapiContent.Biography);
+        const imageUrl =
+            process.env.STRAPI_IMAGE_URL ||
+            process.env.NEXT_PUBLIC_STRAPI_IMAGE_URL;
+
+        return {
+            ...staticAbout,
+            loading: false,
+            title: `${strapiContent.JobTitle} – ${person.name}`,
+            description: strapiContent.seo.metaDescription,
+            tableOfContent: {
+                display: true,
+                subItems: true,
+                IntroductionTitle:
+                    strapiContent.IntroductionSectionTitle || "Introduction",
+                ExperienceTitle:
+                    strapiContent.ExperienceSectionTitle || "Experience",
+                EducationTitle:
+                    strapiContent.EducationSectionTitle || "Education",
+                TechnicalSkillsTitle:
+                    strapiContent.TechnicalSkillsSectionTitle ||
+                    "Technical Skills",
+            },
+            avatar: {
+                display: true,
+                image: strapiContent.ProfileImage.formats.large?.url
+                    ? `${imageUrl}${strapiContent.ProfileImage.formats.large?.url}`
+                    : `${imageUrl}${strapiContent.ProfileImage.url}`,
+                alt:
+                    strapiContent.ProfileImage.alternativeText ||
+                    `${person.name} Profile Image`,
+            },
+            intro: {
+                display: true,
+                title: "Introduction",
+                description: <SimpleHtmlRenderer html={biographyHtml} />,
+            },
+            work: {
+                display: strapiContent.WorkExperience.length > 0,
+                title: "Work Experience",
+                experiences: await Promise.all(
+                    strapiContent.WorkExperience.map(async (exp) => {
+                        return {
+                            company: exp.Company,
+                            timeframe: exp.Timeframe,
+                            role: exp.Role,
+                            description: (
+                                <SimpleHtmlRenderer
+                                    html={await markdownToHtml(exp.Description)}
+                                />
+                            ),
+                        };
+                    })
+                ),
+            },
+            studies: {
+                display: strapiContent.Studies.length > 0,
+                title: "Education",
+                institutions: await Promise.all(
+                    strapiContent.Studies.map(async (study) => {
+                        return {
+                            name: study.Name,
+                            title: study.Title,
+                            timeframe: study.Timeframe,
+                            description: (
+                                <SimpleHtmlRenderer
+                                    html={await markdownToHtml(
+                                        study.Description
+                                    )}
+                                />
+                            ),
+                        };
+                    })
+                ),
+            },
+            technical: {
+                display: strapiContent.Skills.length > 0,
+                title: "Technical Skills",
+                skills: strapiContent.Skills.map((skill) => ({
+                    title: skill.Name,
+                    level: skill.Level,
+                    group: skill.Group,
+                })),
+            },
+            languages: {
+                display: strapiContent.Languages.length > 0,
+                list: strapiContent.Languages.map((lang) => ({
+                    name: lang.Name,
+                    level: lang.Level,
+                })),
+            },
+            social: {
+                display: true,
+                links: strapiContent.SocialLinks.map((link) => ({
+                    title: link.Platform,
+                    url: link.Url || "",
+                    type: link.UseIcon ? "icon" : "custom",
+                    icon: link.CssClass || undefined,
+                    iconUrl: link.Icon || undefined,
+                })),
+            },
+        };
+    }
+
+    return staticAbout;
+}
+
+// Export the static version as default for backward compatibility
+const about: About = staticAbout;
 
 const blog: Blog = {
     path: "/blog",
