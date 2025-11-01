@@ -1,5 +1,6 @@
 import { Row, IconButton, SmartLink, Text } from "@once-ui-system/core";
 import { person, social } from "@/resources";
+import { LanguageSelector } from "./LanguageSelector";
 import styles from "./Footer.module.scss";
 
 export const Footer = () => {
@@ -31,20 +32,23 @@ export const Footer = () => {
                     <Text onBackground="neutral-weak">© {currentYear} /</Text>
                     <Text paddingX="4">{person.name}</Text>
                 </Text>
-                <Row gap="16">
-                    {social.map(
-                        (item) =>
-                            item.link && (
-                                <IconButton
-                                    key={item.name}
-                                    href={item.link}
-                                    icon={item.icon}
-                                    tooltip={item.name}
-                                    size="s"
-                                    variant="ghost"
-                                />
-                            )
-                    )}
+                <LanguageSelector showFlags={true} showLabels={false} />
+                <Row gap="16" vertical="center">
+                    <Row gap="16">
+                        {social.map(
+                            (item) =>
+                                item.link && (
+                                    <IconButton
+                                        key={item.name}
+                                        href={item.link}
+                                        icon={item.icon}
+                                        tooltip={item.name}
+                                        size="s"
+                                        variant="ghost"
+                                    />
+                                )
+                        )}
+                    </Row>
                 </Row>
             </Row>
             <Row height="80" hide s={{ hide: false }} />

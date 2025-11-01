@@ -2,88 +2,79 @@
  * Strapi API functions for fetching home content
  */
 import { cache } from "react";
-
-/**
- * Details from each image format provided by Strapi CMS
- */
-export interface ImageFormat {
-    ext: string;
-    url: string;
-    hash: string;
-    mime: string;
-    name: string;
-    path: string | null;
-    size: number;
-    width: number;
-    height: number;
-    sizeInBytes: number;
-}
-
-/**
- * Image details structure from Strapi CMS
- */
-export interface ImageFormats {
-    id: number;
-    name: string;
-    alternativeText: string;
-    caption: string;
-    width: number;
-    height: number;
-    hash: string;
-    ext: string;
-    mime: string;
-    size: number;
-    url: string;
-    previewUrl: string | null;
-    provider: string;
-    provider_metadata: Record<string, unknown> | null;
-    createdAt: string;
-    updatedAt: string;
-    publishedAt: string;
-    large?: ImageFormat;
-    small?: ImageFormat;
-    medium?: ImageFormat;
-    thumbnail?: ImageFormat;
-}
+import type { StrapiImage } from "@/utils/image";
+import { getBestImageUrl, getStrapiImageUrl } from "@/utils/image";
 
 /**
  * Strapi API response structure for home content
  * Contains all the fields returned by the Strapi API for the home content
  */
 export interface StrapiHomeResponse {
+    /** Main data object containing all home content fields */
     data: {
+        /** Unique identifier for the home content entry */
         id: number;
+        /** Document ID used by Strapi for content management */
         documentId: string;
-        Headline: string;
-        HasFeatured: boolean;
-        Featured: string;
-        SubLine: string;
-        HasCarousel: boolean;
+        /** Main headline text displayed on the home page */
+        headline: string;
+        /** Flag indicating if featured content should be displayed */
+        hasFeatured: boolean;
+        /** Featured content text or description */
+        featured: string;
+        /** Subtitle or secondary text below the headline */
+        subLine: string;
+        /** Flag indicating if image carousel should be displayed */
+        hasCarousel: boolean;
+        /** Timestamp when the content was created */
         createdAt: string;
+        /** Timestamp when the content was last updated */
         updatedAt: string;
+        /** Timestamp when the content was published */
         publishedAt: string;
+        /** Locale/language code for the content (e.g., 'en', 'es') */
         locale: string;
-        HasNewsletter: boolean;
-        NewsletterTitle: string;
-        NewsletterDescription: string;
-        DisplayMostRecentPosts: boolean;
-        SubscribeButtonText: string;
-        Carousel: ImageFormats[];
+        /** Flag indicating if newsletter section should be displayed */
+        hasNewsletter: boolean;
+        /** Title text for the newsletter signup section */
+        newsletterTitle: string;
+        /** Description text for the newsletter signup section */
+        newsletterDescription: string;
+        /** Flag indicating if recent blog posts should be displayed */
+        displayMostRecentPosts: boolean;
+        /** Text for the newsletter subscription button */
+        subscribeButtonText: string;
+        /** Array of images for the carousel display */
+        carousel: StrapiImage[];
+        /** Available localizations for different languages */
         localizations: Record<string, unknown>[];
     };
+    /** Additional metadata from Strapi API response */
     meta: Record<string, unknown>;
 }
 
+/**
+ * Processed home content structure for use in components
+ * Contains the essential fields needed to render the home page
+ */
 export interface HomeContent {
-    Headline: string;
-    HasFeatured: boolean;
-    Featured: string;
-    SubLine: string;
-    HasCarousel: boolean;
-    Carousel: ImageFormats[];
-    HasNewsletter?: boolean;
-    NewsletterTitle?: string;
-    NewsletterDescription?: string;
+    headline: string;
+    /** Flag indicating whether to display the featured content section */
+    hasFeatured: boolean;
+    /** Featured content text, typically a brief description or tagline */
+    featured: string;
+    /** Subtitle or secondary text that appears below the main headline */
+    subLine: string;
+    /** Flag indicating whether to display the image carousel */
+    hasCarousel: boolean;
+    /** Array of images to display in the carousel component */
+    carousel: StrapiImage[];
+    /** Optional flag indicating whether to show the newsletter signup section */
+    hasNewsletter?: boolean;
+    /** Optional title text for the newsletter subscription area */
+    newsletterTitle?: string;
+    /** Optional description text explaining the newsletter benefits */
+    newsletterDescription?: string;
 }
 
 /**
@@ -94,6 +85,7 @@ export interface HomeContent {
 export const getHomeContent = async (): Promise<HomeContent> => {
     const apiUrl =
         process.env.STRAPI_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL;
+    const locale = "en";
 
     if (!apiUrl) {
         throw new Error(
@@ -102,12 +94,15 @@ export const getHomeContent = async (): Promise<HomeContent> => {
     }
 
     try {
-        const response = await fetch(`${apiUrl}/api/home?populate=all`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await fetch(
+            `${apiUrl}/api/home?populate=all&locale=${locale}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (!response.ok) {
             throw new Error(
@@ -118,27 +113,27 @@ export const getHomeContent = async (): Promise<HomeContent> => {
         const data: StrapiHomeResponse = await response.json();
 
         const {
-            Headline,
-            HasFeatured,
-            Featured,
-            SubLine,
-            HasCarousel,
-            Carousel,
-            HasNewsletter,
-            NewsletterTitle,
-            NewsletterDescription,
+            headline,
+            hasFeatured,
+            featured,
+            subLine,
+            hasCarousel,
+            carousel,
+            hasNewsletter,
+            newsletterTitle,
+            newsletterDescription,
         } = data.data;
 
         return {
-            Headline,
-            HasFeatured,
-            Featured,
-            SubLine,
-            HasCarousel,
-            Carousel,
-            HasNewsletter: HasNewsletter,
-            NewsletterTitle: NewsletterTitle,
-            NewsletterDescription: NewsletterDescription,
+            headline,
+            hasFeatured,
+            featured,
+            subLine,
+            hasCarousel,
+            carousel,
+            hasNewsletter,
+            newsletterTitle,
+            newsletterDescription,
         };
     } catch (error) {
         console.error("Error fetching home content from Strapi:", error);

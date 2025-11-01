@@ -11,12 +11,14 @@ import type {
 import { Line, Logo, Row, Text } from "@once-ui-system/core";
 import { getHomeContentSafe } from "@/api/home";
 import { getAboutContentSafe } from "@/api/about";
+import { getBlogPosts } from "@/api/blog";
 import {
     markdownToHtml,
     safeMarkdownToHtml,
     textToHtml,
 } from "@/utils/markdown";
 import { SimpleHtmlRenderer } from "@/components/SafeHtmlRenderer";
+import { getBestImageUrl } from "@/utils/image";
 const person: Person = {
     firstName: "Axel",
     lastName: "Rodriguez",
@@ -95,20 +97,20 @@ export async function getHomePageContent(): Promise<Home> {
 
     if (strapiContent) {
         // Convert the subline to HTML and wrap it in a React element
-        const sublineHtml = await markdownToHtml(strapiContent.SubLine);
+        const sublineHtml = await markdownToHtml(strapiContent.subLine);
         const imageUrl =
             process.env.STRAPI_IMAGE_URL ||
             process.env.NEXT_PUBLIC_STRAPI_IMAGE_URL;
 
         return {
             ...staticHome,
-            headline: <>{strapiContent.Headline}</>,
+            headline: <>{strapiContent.headline}</>,
             featured: {
-                display: strapiContent.HasFeatured,
+                display: strapiContent.hasFeatured,
                 title: (
                     <Row gap="12" vertical="center">
                         <strong className="ml-4">
-                            {strapiContent.Featured}
+                            {strapiContent.featured}
                         </strong>{" "}
                         <Line
                             background="brand-alpha-strong"
@@ -125,20 +127,20 @@ export async function getHomePageContent(): Promise<Home> {
             subline: <SimpleHtmlRenderer html={sublineHtml} />,
             loading: false,
             carousel: {
-                display: strapiContent.HasCarousel,
-                images: strapiContent.HasCarousel
-                    ? strapiContent.Carousel.map((image) => ({
+                display: strapiContent.hasCarousel,
+                images: strapiContent.hasCarousel
+                    ? strapiContent.carousel?.map((image) => ({
                           id: image.id.toString(),
-                          alt: image.alternativeText,
-                          caption: image.caption,
-                          url: `${imageUrl}${image.large?.url || image.url}`,
+                          alt: image.alternativeText || "",
+                          caption: image.caption || "",
+                          url: getBestImageUrl(image, "large"),
                       }))
                     : [],
             },
             newsletter: {
-                display: strapiContent.HasNewsletter ?? false,
-                title: strapiContent.NewsletterTitle,
-                description: strapiContent.NewsletterDescription,
+                display: strapiContent.hasNewsletter ?? false,
+                title: strapiContent.newsletterTitle,
+                description: strapiContent.newsletterDescription,
             },
         };
     }
@@ -212,7 +214,7 @@ export async function getAboutPageContent(): Promise<About> {
 
     if (strapiContent) {
         // Convert biography to HTML
-        const biographyHtml = await markdownToHtml(strapiContent.Biography);
+        const biographyHtml = await markdownToHtml(strapiContent.biography);
         const imageUrl =
             process.env.STRAPI_IMAGE_URL ||
             process.env.NEXT_PUBLIC_STRAPI_IMAGE_URL;
@@ -220,28 +222,28 @@ export async function getAboutPageContent(): Promise<About> {
         return {
             ...staticAbout,
             loading: false,
-            title: `${strapiContent.JobTitle} – ${person.name}`,
+            title: `${strapiContent.jobTitle} – ${person.name}`,
             description: strapiContent.seo.metaDescription,
             tableOfContent: {
                 display: true,
                 subItems: true,
                 IntroductionTitle:
-                    strapiContent.IntroductionSectionTitle || "Introduction",
+                    strapiContent.introductionSectionTitle || "Introduction",
                 ExperienceTitle:
-                    strapiContent.ExperienceSectionTitle || "Experience",
+                    strapiContent.experienceSectionTitle || "Experience",
                 EducationTitle:
-                    strapiContent.EducationSectionTitle || "Education",
+                    strapiContent.educationSectionTitle || "Education",
                 TechnicalSkillsTitle:
-                    strapiContent.TechnicalSkillsSectionTitle ||
+                    strapiContent.technicalSkillsSectionTitle ||
                     "Technical Skills",
             },
             avatar: {
                 display: true,
-                image: strapiContent.ProfileImage.formats.large?.url
-                    ? `${imageUrl}${strapiContent.ProfileImage.formats.large?.url}`
-                    : `${imageUrl}${strapiContent.ProfileImage.url}`,
+                image: strapiContent.profileImage
+                    ? getBestImageUrl(strapiContent.profileImage, "large")
+                    : person.avatar,
                 alt:
-                    strapiContent.ProfileImage.alternativeText ||
+                    strapiContent.profileImage?.alternativeText ||
                     `${person.name} Profile Image`,
             },
             intro: {
@@ -250,17 +252,17 @@ export async function getAboutPageContent(): Promise<About> {
                 description: <SimpleHtmlRenderer html={biographyHtml} />,
             },
             work: {
-                display: strapiContent.WorkExperience.length > 0,
+                display: strapiContent.workExperience.length > 0,
                 title: "Work Experience",
                 experiences: await Promise.all(
-                    strapiContent.WorkExperience.map(async (exp) => {
+                    strapiContent.workExperience.map(async (exp) => {
                         return {
-                            company: exp.Company,
-                            timeframe: exp.Timeframe,
-                            role: exp.Role,
+                            company: exp.company,
+                            timeframe: exp.timeframe,
+                            role: exp.role,
                             description: (
                                 <SimpleHtmlRenderer
-                                    html={await markdownToHtml(exp.Description)}
+                                    html={await markdownToHtml(exp.description)}
                                 />
                             ),
                         };
@@ -268,18 +270,18 @@ export async function getAboutPageContent(): Promise<About> {
                 ),
             },
             studies: {
-                display: strapiContent.Studies.length > 0,
+                display: strapiContent.studies.length > 0,
                 title: "Education",
                 institutions: await Promise.all(
-                    strapiContent.Studies.map(async (study) => {
+                    strapiContent.studies.map(async (study) => {
                         return {
-                            name: study.Name,
-                            title: study.Title,
-                            timeframe: study.Timeframe,
+                            name: study.name,
+                            title: study.title,
+                            timeframe: study.timeframe,
                             description: (
                                 <SimpleHtmlRenderer
                                     html={await markdownToHtml(
-                                        study.Description
+                                        study.description
                                     )}
                                 />
                             ),
@@ -288,29 +290,29 @@ export async function getAboutPageContent(): Promise<About> {
                 ),
             },
             technical: {
-                display: strapiContent.Skills.length > 0,
+                display: strapiContent.skills.length > 0,
                 title: "Technical Skills",
-                skills: strapiContent.Skills.map((skill) => ({
-                    title: skill.Name,
-                    level: skill.Level,
-                    group: skill.Group,
+                skills: strapiContent.skills.map((skill) => ({
+                    title: skill.name,
+                    level: skill.level,
+                    group: skill.group,
                 })),
             },
             languages: {
-                display: strapiContent.Languages.length > 0,
-                list: strapiContent.Languages.map((lang) => ({
-                    name: lang.Name,
-                    level: lang.Level,
+                display: strapiContent.languages.length > 0,
+                list: strapiContent.languages.map((lang) => ({
+                    name: lang.name,
+                    level: lang.level,
                 })),
             },
             social: {
                 display: true,
-                links: strapiContent.SocialLinks.map((link) => ({
-                    title: link.Platform,
-                    url: link.Url || "",
-                    type: link.UseIcon ? "icon" : "custom",
-                    icon: link.CssClass || undefined,
-                    iconUrl: link.Icon || undefined,
+                links: strapiContent.socialLinks.map((link) => ({
+                    title: link.platform,
+                    url: link.url || "",
+                    type: link.useIcon ? "icon" : "custom",
+                    icon: link.cssClass || undefined,
+                    iconUrl: link.icon || undefined,
                 })),
             },
         };
@@ -390,5 +392,19 @@ const gallery: Gallery = {
         },
     ],
 };
+
+/**
+ * Fetches blog content from Strapi CMS with error handling
+ * @returns Promise resolving to blog posts array or empty array on error
+ */
+export async function getBlogPageContent() {
+    try {
+        const posts = await getBlogPosts();
+        return posts;
+    } catch (error) {
+        console.error("Error fetching blog content:", error);
+        return [];
+    }
+}
 
 export { person, social, home, about, blog, work, gallery };

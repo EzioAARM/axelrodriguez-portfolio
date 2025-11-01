@@ -16,6 +16,7 @@ interface SafeHtmlRendererProps {
  */
 export function SafeHtmlRenderer({ html, className }: SafeHtmlRendererProps) {
     return (
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
         <div className={className} dangerouslySetInnerHTML={{ __html: html }} />
     );
 }

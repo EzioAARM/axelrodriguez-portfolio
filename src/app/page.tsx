@@ -142,16 +142,17 @@ export default async function Home() {
                     </Column>
                 </Column>
             )}
-            {homeContent.carousel.display &&
-            homeContent.carousel.images.length > 0 ? (
+            {homeContent.carousel.display ? (
                 <RevealFx translateY="16" delay={0.6}>
                     <Column fillWidth gap="m">
                         <Carousel
                             sizes="(max-width: 960px) 100vw, 960px"
-                            items={homeContent.carousel.images.map((image) => ({
-                                slide: image.url,
-                                alt: image.alt,
-                            }))}
+                            items={homeContent.carousel.images?.map(
+                                (image) => ({
+                                    slide: image.url,
+                                    alt: image.alt,
+                                })
+                            )}
                         />
                     </Column>
                 </RevealFx>

@@ -60,7 +60,7 @@ export default async function About() {
             display: about.technical.display,
             items: [
                 ...new Set(about.technical.skills.map((skill) => skill.group)),
-            ],
+            ].map((group) => group || "Other"),
         },
     ];
     if (about.loading) {

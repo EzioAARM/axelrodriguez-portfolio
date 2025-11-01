@@ -73,9 +73,14 @@ const fonts: FontsConfig = {
 // default customization applied to the HTML in the main layout.tsx
 const style: StyleConfig = {
     theme: "system",
+
+    // @ts-ignore
     brand: "custom",
+    // @ts-ignore
     accent: "custom",
+    // @ts-ignore
     neutral: "custom",
+
     border: "rounded",
     solid: "color",
     solidStyle: "plastic",

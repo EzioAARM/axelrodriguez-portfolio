@@ -87,14 +87,14 @@ export async function StrapiHomeContent() {
     if (strapiContent) {
         return (
             <>
-                <h1>{strapiContent.Headline}</h1>
-                {strapiContent.HasFeatured && (
-                    <div className="featured">{strapiContent.Featured}</div>
+                <h1>{strapiContent.headline}</h1>
+                {strapiContent.hasFeatured && (
+                    <div className="featured">{strapiContent.featured}</div>
                 )}
                 <div>
-                    {typeof strapiContent.SubLine === "string"
-                        ? strapiContent.SubLine
-                        : markdownToHtml(strapiContent.SubLine)}
+                    {typeof strapiContent.subLine === "string"
+                        ? strapiContent.subLine
+                        : markdownToHtml(strapiContent.subLine)}
                 </div>
             </>
         );

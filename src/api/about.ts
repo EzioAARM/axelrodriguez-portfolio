@@ -2,93 +2,8 @@
  * Strapi API functions for fetching about content
  */
 import { cache } from "react";
-
-/**
- * Image format details from Strapi CMS
- * Represents different image format variants (thumbnail, small, medium, large)
- */
-export interface ImageFormat {
-    /** File extension (e.g., ".jpg", ".png") */
-    ext: string;
-    /** Relative URL path to the image */
-    url: string;
-    /** Unique hash identifier for the image */
-    hash: string;
-    /** MIME type of the image (e.g., "image/jpeg") */
-    mime: string;
-    /** Display name of the image file */
-    name: string;
-    /** File system path (usually null for Strapi uploads) */
-    path: string | null;
-    /** File size in kilobytes */
-    size: number;
-    /** Image width in pixels */
-    width: number;
-    /** Image height in pixels */
-    height: number;
-    /** File size in bytes */
-    sizeInBytes: number;
-}
-
-/**
- * Image formats structure from Strapi CMS
- * Contains different sized variants of the same image for responsive design
- */
-export interface ImageFormats {
-    /** Large format variant (typically 1000px width) */
-    large?: ImageFormat;
-    /** Small format variant (typically 500px width) */
-    small?: ImageFormat;
-    /** Medium format variant (typically 750px width) */
-    medium?: ImageFormat;
-    /** Thumbnail format variant (typically 156px height) */
-    thumbnail?: ImageFormat;
-}
-
-/**
- * Strapi image structure
- * Complete image object returned by Strapi CMS with all metadata and format variants
- */
-export interface StrapiImage {
-    /** Unique numeric identifier for the image */
-    id: number;
-    /** Strapi document identifier (UUID-like string) */
-    documentId: string;
-    /** Original filename of the uploaded image */
-    name: string;
-    /** Alternative text for accessibility (can be null) */
-    alternativeText: string | null;
-    /** Optional caption for the image */
-    caption: string | null;
-    /** Original image width in pixels */
-    width: number;
-    /** Original image height in pixels */
-    height: number;
-    /** Available image format variants (thumbnail, small, medium, large) */
-    formats: ImageFormats;
-    /** Unique hash identifier for the image file */
-    hash: string;
-    /** File extension (e.g., ".JPEG", ".PNG") */
-    ext: string;
-    /** MIME type of the image */
-    mime: string;
-    /** File size in kilobytes */
-    size: number;
-    /** Direct URL to the original image */
-    url: string;
-    /** Preview URL (usually null for regular uploads) */
-    previewUrl: string | null;
-    /** Storage provider (e.g., "local", "aws-s3") */
-    provider: string;
-    /** Additional provider-specific metadata */
-    provider_metadata: Record<string, unknown> | null;
-    /** ISO timestamp when the image was created */
-    createdAt: string;
-    /** ISO timestamp when the image was last updated */
-    updatedAt: string;
-    /** ISO timestamp when the image was published */
-    publishedAt: string;
-}
+import type { StrapiImage } from "@/utils/image";
+import { getBestImageUrl, getStrapiImageUrl } from "@/utils/image";
 
 /**
  * Language structure
@@ -98,9 +13,9 @@ export interface Language {
     /** Unique identifier for the language entry */
     id: number;
     /** Display name of the language (e.g., "English", "Spanish") */
-    Name: string;
+    name: string;
     /** Proficiency level (e.g., "native", "fluent", "intermediate") */
-    Level: string;
+    level: string;
 }
 
 /**
@@ -111,15 +26,15 @@ export interface SocialLink {
     /** Unique identifier for the social link entry */
     id: number;
     /** Platform name (e.g., "LinkedIn", "GitHub", "Twitter") */
-    Platform: string;
+    platform: string;
     /** Full URL to the social profile or website */
-    Url: string | null;
+    url: string | null;
     /** Icon type (e.g., "icon" for built-in icons, "custom" for user-uploaded icons) */
-    UseIcon: boolean;
+    useIcon: boolean;
     /** Icon identifier or name for displaying the platform icon */
-    CssClass: string | null;
+    cssClass: string | null;
     /** Icon URL for displaying the platform icon */
-    Icon: string | null;
+    icon: string | null;
 }
 
 /**
@@ -130,13 +45,13 @@ export interface Skill {
     /** Unique identifier for the skill entry */
     id: number;
     /** Display name of the skill (e.g., "AWS", "React", "Node.js") */
-    Name: string;
+    name: string;
     /** Proficiency level (e.g., "beginner", "intermediate", "advanced", "expert") */
-    Level: "beginner" | "intermediate" | "advanced" | "expert";
+    level: "beginner" | "intermediate" | "advanced" | "expert";
     /** Icon identifier for displaying the skill icon (can be null) */
-    Icon: string | null;
+    icon: string | null;
     /** Skill group or category (e.g., "Frontend", "Backend", "DevOps", "Hard", "Soft") */
-    Group: string;
+    group: string;
 }
 
 /**
@@ -147,13 +62,13 @@ export interface WorkExperience {
     /** Unique identifier for the work experience entry */
     id: number;
     /** Company or organization name */
-    Company: string;
+    company: string;
     /** Employment duration (e.g., "January 2020 - Present", "2019-2021") */
-    Timeframe: string;
+    timeframe: string;
     /** Job title or position held */
-    Role: string;
+    role: string;
     /** Key accomplishments and responsibilities in this role */
-    Description: string;
+    description: string;
 }
 
 /**
@@ -164,13 +79,13 @@ export interface Study {
     /** Unique identifier for the study entry */
     id: number;
     /** Institution name (e.g., "Universidad Rafael Landívar", "Coursera") */
-    Name: string;
+    name: string;
     /** Degree, certification, or course title */
-    Title: string;
+    title: string;
     /** Study period (e.g., "2015 - 2022", "March 2023") */
-    Timeframe: string;
+    timeframe: string;
     /** Additional details about the program or achievements */
-    Description: string;
+    description: string;
 }
 
 /**
@@ -210,29 +125,29 @@ export interface StrapiAboutResponse {
         /** ISO timestamp when the entry was published */
         publishedAt: string;
         /** Current job title or professional role */
-        JobTitle: string;
+        jobTitle: string;
         /** Personal biography in markdown or rich text format */
-        Biography: string;
+        biography: string;
         /** Introduction section title */
-        IntroductionSectionTitle: string;
+        introductionSectionTitle: string;
         /** Experience section title */
-        ExperienceSectionTitle: string;
+        experienceSectionTitle: string;
         /** Education section title */
-        EducationSectionTitle: string;
+        educationSectionTitle: string;
         /** Technical skills section title */
-        TechnicalSkillsSectionTitle: string;
+        technicalSkillsSectionTitle: string;
         /** Profile image with all format variants */
-        ProfileImage: StrapiImage;
+        profileImage: StrapiImage;
         /** Array of spoken languages */
-        Languages: Language[];
+        languages: Language[];
         /** Array of social media links and profiles */
-        SocialLinks: SocialLink[];
+        socialLinks: SocialLink[];
         /** Array of technical and professional skills */
-        Skills: Skill[];
+        skills: Skill[];
         /** Array of work experience entries */
-        WorkExperience: WorkExperience[];
+        workExperience: WorkExperience[];
         /** Array of educational background entries */
-        Studies: Study[];
+        studies: Study[];
         /** SEO metadata for the about page */
         seo: SEO;
     };
@@ -246,31 +161,31 @@ export interface StrapiAboutResponse {
  */
 export interface AboutContent {
     /** Current job title or professional role */
-    JobTitle: string;
+    jobTitle: string;
     /** Personal biography in markdown or rich text format */
-    Biography: string;
+    biography: string;
     /** Profile image with all format variants and metadata */
-    ProfileImage: StrapiImage;
+    profileImage: StrapiImage;
     /** Array of spoken languages with proficiency information */
-    Languages: Language[];
+    languages: Language[];
     /** Array of social media links and external profiles */
-    SocialLinks: SocialLink[];
+    socialLinks: SocialLink[];
     /** Array of technical and professional skills with levels */
-    Skills: Skill[];
+    skills: Skill[];
     /** Array of professional work experience entries */
-    WorkExperience: WorkExperience[];
+    workExperience: WorkExperience[];
     /** Array of educational background and certifications */
-    Studies: Study[];
+    studies: Study[];
     /** SEO metadata for search engine optimization */
     seo: SEO;
     /** Introduction section title */
-    IntroductionSectionTitle: string;
+    introductionSectionTitle: string;
     /** Experience section title */
-    ExperienceSectionTitle: string;
+    experienceSectionTitle: string;
     /** Education section title */
-    EducationSectionTitle: string;
+    educationSectionTitle: string;
     /** Technical skills section title */
-    TechnicalSkillsSectionTitle: string;
+    technicalSkillsSectionTitle: string;
 }
 
 /**
@@ -281,6 +196,7 @@ export interface AboutContent {
 export const getAboutContent = cache(async (): Promise<AboutContent> => {
     const apiUrl =
         process.env.STRAPI_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL;
+    const locale = "en";
 
     if (!apiUrl) {
         throw new Error(
@@ -289,12 +205,15 @@ export const getAboutContent = cache(async (): Promise<AboutContent> => {
     }
 
     try {
-        const response = await fetch(`${apiUrl}/api/about?populate=*`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+        const response = await fetch(
+            `${apiUrl}/api/about?populate=*&locale=${locale}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
         if (!response.ok) {
             throw new Error(
@@ -305,35 +224,35 @@ export const getAboutContent = cache(async (): Promise<AboutContent> => {
         const data: StrapiAboutResponse = await response.json();
 
         const {
-            JobTitle,
-            Biography,
-            ProfileImage,
-            Languages,
-            SocialLinks,
-            Skills,
-            WorkExperience,
-            Studies,
+            jobTitle,
+            biography,
+            profileImage,
+            languages,
+            socialLinks,
+            skills,
+            workExperience,
+            studies,
             seo,
-            IntroductionSectionTitle,
-            ExperienceSectionTitle,
-            EducationSectionTitle,
-            TechnicalSkillsSectionTitle,
+            introductionSectionTitle,
+            experienceSectionTitle,
+            educationSectionTitle,
+            technicalSkillsSectionTitle,
         } = data.data;
 
         return {
-            JobTitle,
-            Biography,
-            ProfileImage,
-            Languages,
-            SocialLinks,
-            Skills,
-            WorkExperience,
-            Studies,
+            jobTitle,
+            biography,
+            profileImage,
+            languages,
+            socialLinks,
+            skills,
+            workExperience,
+            studies,
             seo,
-            IntroductionSectionTitle,
-            ExperienceSectionTitle,
-            EducationSectionTitle,
-            TechnicalSkillsSectionTitle,
+            introductionSectionTitle,
+            experienceSectionTitle,
+            educationSectionTitle,
+            technicalSkillsSectionTitle,
         };
     } catch (error) {
         console.error("Error fetching about content from Strapi:", error);
