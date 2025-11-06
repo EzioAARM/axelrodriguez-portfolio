@@ -24,7 +24,7 @@ const person: Person = {
     lastName: "Rodriguez",
     name: "Axel Rodríguez",
     role: "Software Engineer",
-    avatar: "/images/avatar.jpg",
+    avatar: "/images/avatar.jpeg",
     email: "alejandrom9712@gmail.com",
     location: "America/Guatemala", // Expecting the IANA time zone identifier, e.g., 'Europe/Vienna'
     languages: ["English", "Spanish"], // optional: Leave the array empty if you don't want to display languages
@@ -58,10 +58,10 @@ const social: Social = [
 // Static home content (fallback)
 const staticHome: Home = {
     path: "/",
-    image: "/images/og/home.jpg",
-    label: "Home",
-    title: `${person.name}'s Portfolio`,
-    description: `Portfolio website showcasing my work as a ${person.role}`,
+    image: "/images/avatar.jpg",
+    label: "Inicio",
+    title: `Portafolio de ${person.name}`,
+    description: `Sitio web de portafolio que muestra mi trabajo como ${person.role}`,
     loading: true,
     headline: "",
     featured: {
@@ -118,11 +118,11 @@ export async function getHomePageContent(): Promise<Home> {
                             height="20"
                         />
                         <Text marginRight="4" onBackground="brand-medium">
-                            Featured work
+                            Destacado
                         </Text>
                     </Row>
                 ),
-                href: staticHome.featured.href, // Keep the original href
+                href: strapiContent.featuredLink || "#work",
             },
             subline: <SimpleHtmlRenderer html={sublineHtml} />,
             loading: false,
@@ -154,17 +154,17 @@ const home: Home = staticHome;
 // Static about content
 const staticAbout: About = {
     path: "/about",
-    label: "About",
-    title: `About – ${person.name}`,
-    description: `Meet ${person.name}, ${person.role} from ${person.location}`,
+    label: "Sobre mi",
+    title: `Sobre mi – ${person.name}`,
+    description: `Conoce a ${person.name}, ${person.role} de ${person.location}`,
     loading: true,
     tableOfContent: {
         display: true,
         subItems: true,
-        IntroductionTitle: "Introduction",
-        ExperienceTitle: "Experience",
-        EducationTitle: "Education",
-        TechnicalSkillsTitle: "Technical Skills",
+        IntroductionTitle: "Introducción",
+        ExperienceTitle: "Experiencia",
+        EducationTitle: "Educación",
+        TechnicalSkillsTitle: "Habilidades Técnicas",
     },
     avatar: {
         display: true,

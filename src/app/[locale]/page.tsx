@@ -24,7 +24,12 @@ import {
 } from "@/resources";
 import { Mailchimp } from "@/components";
 
-export async function generateMetadata() {
+interface HomePageProps {
+    params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: HomePageProps) {
+    const { locale } = await params;
     // Get dynamic content for metadata
     const homeContent = await getHomePageContent();
     return Meta.generate({
@@ -36,7 +41,8 @@ export async function generateMetadata() {
     });
 }
 
-export default async function Home() {
+export default async function Home({ params }: HomePageProps) {
+    const { locale } = await params;
     // Fetch home content with Strapi integration
     const homeContent = await getHomePageContent();
     return (
@@ -79,7 +85,6 @@ export default async function Home() {
                                     textVariant="label-default-s"
                                     arrow={false}
                                     href={homeContent.featured.href}
-                                    popoverTarget="_blank"
                                 >
                                     <Row paddingY="2">
                                         {homeContent.featured.title}

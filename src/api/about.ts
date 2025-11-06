@@ -196,7 +196,7 @@ export interface AboutContent {
 export const getAboutContent = cache(async (): Promise<AboutContent> => {
     const apiUrl =
         process.env.STRAPI_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL;
-    const locale = "en";
+    const locale = "es";
 
     if (!apiUrl) {
         throw new Error(

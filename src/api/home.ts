@@ -21,7 +21,9 @@ export interface StrapiHomeResponse {
         /** Flag indicating if featured content should be displayed */
         hasFeatured: boolean;
         /** Featured content text or description */
-        featured: string;
+        featured?: string;
+        /** Optional link for the featured content */
+        featuredLink?: string;
         /** Subtitle or secondary text below the headline */
         subLine: string;
         /** Flag indicating if image carousel should be displayed */
@@ -62,7 +64,9 @@ export interface HomeContent {
     /** Flag indicating whether to display the featured content section */
     hasFeatured: boolean;
     /** Featured content text, typically a brief description or tagline */
-    featured: string;
+    featured?: string;
+    /** Optional link for the featured content */
+    featuredLink?: string;
     /** Subtitle or secondary text that appears below the main headline */
     subLine: string;
     /** Flag indicating whether to display the image carousel */
@@ -85,7 +89,7 @@ export interface HomeContent {
 export const getHomeContent = async (): Promise<HomeContent> => {
     const apiUrl =
         process.env.STRAPI_API_URL || process.env.NEXT_PUBLIC_STRAPI_API_URL;
-    const locale = "en";
+    const locale = "es";
 
     if (!apiUrl) {
         throw new Error(
@@ -116,6 +120,7 @@ export const getHomeContent = async (): Promise<HomeContent> => {
             headline,
             hasFeatured,
             featured,
+            featuredLink,
             subLine,
             hasCarousel,
             carousel,
@@ -128,6 +133,7 @@ export const getHomeContent = async (): Promise<HomeContent> => {
             headline,
             hasFeatured,
             featured,
+            featuredLink,
             subLine,
             hasCarousel,
             carousel,

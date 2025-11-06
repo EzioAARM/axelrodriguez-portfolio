@@ -32,7 +32,7 @@ export const Footer = () => {
                     <Text onBackground="neutral-weak">© {currentYear} /</Text>
                     <Text paddingX="4">{person.name}</Text>
                 </Text>
-                <LanguageSelector showFlags={true} showLabels={false} />
+                {/* <LanguageSelector showFlags={true} showLabels={false} /> */}
                 <Row gap="16" vertical="center">
                     <Row gap="16">
                         {social.map(

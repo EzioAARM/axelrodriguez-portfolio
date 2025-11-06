@@ -19,28 +19,41 @@ import { formatDate } from "@/utils/formatDate";
 import { getBlogPosts, getBlogPostBySlug } from "@/api/blog";
 import type { Metadata } from "next";
 import React from "react";
-import { PostsWrapper } from "@/components/blog/PostsWrapper";
-import { ShareSection } from "@/components/blog/ShareSection";
 import { Posts } from "@/components/blog/Posts";
+import { ShareSection } from "@/components/blog/ShareSection";
 
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-    try {
-        const posts = await getBlogPosts();
-        return posts
-            .filter((post) => post.slug && typeof post.slug === "string")
-            .map((post) => ({
-                slug: post.slug,
-            }));
-    } catch (error) {
-        console.error("Failed to fetch blog posts for static params:", error);
-        return [];
+export async function generateStaticParams(): Promise<
+    { locale: string; slug: string }[]
+> {
+    const locales = ["es", "en"];
+    const params = [];
+
+    for (const locale of locales) {
+        try {
+            const posts = await getBlogPosts();
+            for (const post of posts) {
+                if (post.slug && typeof post.slug === "string") {
+                    params.push({
+                        locale,
+                        slug: post.slug,
+                    });
+                }
+            }
+        } catch (error) {
+            console.error(
+                `Failed to fetch blog posts for locale ${locale}:`,
+                error
+            );
+        }
     }
+
+    return params;
 }
 
 export async function generateMetadata({
     params,
 }: {
-    params: Promise<{ slug: string | string[] }>;
+    params: Promise<{ locale: string; slug: string | string[] }>;
 }): Promise<Metadata> {
     const routeParams = await params;
     const slugPath = Array.isArray(routeParams.slug)
@@ -65,7 +78,7 @@ export async function generateMetadata({
 export default async function Blog({
     params,
 }: {
-    params: Promise<{ slug: string | string[] }>;
+    params: Promise<{ locale: string; slug: string | string[] }>;
 }) {
     const routeParams = await params;
     const slugPath = Array.isArray(routeParams.slug)
@@ -78,6 +91,9 @@ export default async function Blog({
     if (!post) {
         notFound();
     }
+
+    // Fetch all posts for the "Recent posts" section
+    const allPosts = await getBlogPosts();
     const avatars =
         post.metadata.team?.map((person) => ({
             src: person.avatar,
@@ -184,6 +200,7 @@ export default async function Blog({
                             Recent posts
                         </Heading>
                         <Posts
+                            posts={allPosts}
                             range={[1, 2]}
                             columns="2"
                             thumbnail

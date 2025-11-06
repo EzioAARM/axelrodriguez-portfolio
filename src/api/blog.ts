@@ -136,7 +136,7 @@ async function fetchBlogPostsFromStrapi(): Promise<BlogPost[]> {
         const apiUrl =
             process.env.STRAPI_API_URL ||
             process.env.NEXT_PUBLIC_STRAPI_API_URL;
-        const locale = "en";
+        const locale = "es";
 
         if (!apiUrl) {
             throw new Error(
@@ -216,7 +216,7 @@ async function fetchBlogPostBySlugFromStrapi(
         const apiUrl =
             process.env.STRAPI_API_URL ||
             process.env.NEXT_PUBLIC_STRAPI_API_URL;
-        const locale = "en"; // Default locale
+        const locale = "es"; // Default locale
 
         if (!apiUrl) {
             throw new Error(
@@ -224,7 +224,7 @@ async function fetchBlogPostBySlugFromStrapi(
             );
         }
         const response = await fetch(
-            `${apiUrl}/api/posts?filters[Slug][$eq]=${slug}&populate=*&locale=${locale}`,
+            `${apiUrl}/api/posts?filters[slug][$eq]=${slug}&populate=*&locale=${locale}`,
             {
                 headers: {
                     "Content-Type": "application/json",
