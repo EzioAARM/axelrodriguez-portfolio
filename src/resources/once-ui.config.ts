@@ -18,9 +18,9 @@ const baseURL: string = "https://axelrodriguez.work";
 const routes: RoutesConfig = {
     "/": true,
     "/about": true,
-    "/work": true,
-    "/blog": true,
-    "/gallery": true,
+    "/work": false,
+    "/blog": false,
+    "/gallery": false,
 };
 
 const display: DisplayConfig = {
